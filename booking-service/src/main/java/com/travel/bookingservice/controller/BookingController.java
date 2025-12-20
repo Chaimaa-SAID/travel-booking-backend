@@ -1,0 +1,59 @@
+package com.travel.bookingservice.controller;
+
+import com.travel.bookingservice.dto.BookingRequest;
+import com.travel.bookingservice.dto.BookingResponse;
+import com.travel.bookingservice.model.Booking;
+import com.travel.bookingservice.service.BookingService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+@RestController
+@RequestMapping("/api/bookings")
+public class BookingController {
+
+    private final BookingService bookingService;
+
+    public BookingController(BookingService bookingService) {
+        this.bookingService = bookingService;
+    }
+
+    // USER peut créer une réservation
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping
+    public Mono<ResponseEntity<BookingResponse>> createBooking(@RequestBody BookingRequest req) {
+        return bookingService.createBooking(req)
+                .map(res -> ResponseEntity.ok(res));
+    }
+
+    // USER peut consulter sa réservation
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/{id}")
+    public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
+        Booking b = bookingService.getBooking(id);
+        if (b == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(b);
+    }
+
+    // USER peut mettre à jour le statut (ex: annuler)
+    @PreAuthorize("hasRole('USER')")
+    @PutMapping("/{id}")
+    public ResponseEntity<BookingResponse> updateBooking(@PathVariable Long id, @RequestParam String status) {
+        Booking booking = bookingService.getBooking(id);
+        if (booking == null) return ResponseEntity.notFound().build();
+        booking.setStatus(status);
+        bookingService.saveBooking(booking);
+        return ResponseEntity.ok(new BookingResponse(booking.getId(), booking.getStatus(), booking.getTotalPrice()));
+    }
+
+    // ADMIN peut supprimer une réservation
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
+        Booking booking = bookingService.getBooking(id);
+        if (booking == null) return ResponseEntity.notFound().build();
+        bookingService.deleteBooking(id);
+        return ResponseEntity.noContent().build();
+    }
+}
