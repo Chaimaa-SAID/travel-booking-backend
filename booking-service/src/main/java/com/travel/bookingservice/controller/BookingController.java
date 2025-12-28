@@ -9,6 +9,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
@@ -44,7 +46,15 @@ public class BookingController {
         if (booking == null) return ResponseEntity.notFound().build();
         booking.setStatus(status);
         bookingService.saveBooking(booking);
-        return ResponseEntity.ok(new BookingResponse(booking.getId(), booking.getStatus(), booking.getTotalPrice()));
+        return ResponseEntity.ok(
+                new BookingResponse(
+                        booking.getId(),           // bookingId
+                        booking.getStatus(),       // status
+                        booking.getTotalPrice(),   // totalPrice
+                        "FLIGHT_HOTEL",            // type (ou "FLIGHT"/"HOTEL" selon ton cas)
+                        null                       // itemDetails (tu peux mettre null si tu ne veux pas les détails ici)
+                )
+        );
     }
 
     // ADMIN peut supprimer une réservation
@@ -56,4 +66,18 @@ public class BookingController {
         bookingService.deleteBooking(id);
         return ResponseEntity.noContent().build();
     }
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public List<Booking> getAllBookings() {
+        return bookingService.getAllBookings();
+    }
+
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Booking>> getUserBookings(@PathVariable Long userId) {
+        List<Booking> bookings = bookingService.getBookingsByUserId(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+
 }

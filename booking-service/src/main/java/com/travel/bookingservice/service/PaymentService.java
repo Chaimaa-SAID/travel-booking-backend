@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 public class PaymentService {
 
     private final WebClient webClient;
-    private final String paymentUrl; // e.g. http://localhost:9000/pay
+    private final String paymentUrl;
 
     public PaymentService(WebClient webClient, @Value("${payment.service.url}") String paymentUrl) {
         this.webClient = webClient;

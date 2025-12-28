@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("http://localhost:4200"); // Autorise Angular
+        config.addAllowedOrigin("http://localhost:5173");
         config.addAllowedHeader("*"); // Autorise tous les headers
         config.addAllowedMethod("*"); // Autorise toutes les méthodes (GET, POST, PUT, DELETE…)
         config.setAllowCredentials(true);
